@@ -109,6 +109,36 @@ export class HistoriasController {
   }
 
   @ApiOperation({
+    summary: 'Obtener cuestionario médico estructurado',
+    description: 'Obtener el template del cuestionario médico completo con todas las preguntas disponibles'
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Template de cuestionario obtenido exitosamente',
+    content: {
+      'application/json': {
+        example: {
+          antecedentesFamiliares: [
+            { pregunta: "Padre con vida?", tipo: "si_no" },
+            { pregunta: "Enfermedad que padece o padeció (padre)", tipo: "texto" },
+            { pregunta: "Hermanos?", tipo: "mixto", detalle: "Sanos?" }
+          ],
+          habitosYAntecedentesMedicos: [
+            { pregunta: "Realiza algún deporte?", tipo: "si_no" },
+            { pregunta: "Es alérgico a la penicilina?", tipo: "si_no" },
+            { pregunta: "Está controlado?", tipo: "mixto", detalle: "Con qué?" }
+          ]
+        }
+      }
+    }
+  })
+  @Get('template/cuestionario')
+  @Roles(UserRole.ADMIN, UserRole.DOCENTE, UserRole.RECEPCION)
+  async getCuestionarioTemplate() {
+    return this.historiasService.getCuestionarioTemplate();
+  }
+
+  @ApiOperation({
     summary: 'Actualizar historia clínica',
     description: 'Modificar los datos de una historia clínica existente'
   })

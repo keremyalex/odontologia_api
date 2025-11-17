@@ -22,7 +22,7 @@ export class Historia {
   cuestionario: any; // JSON con las respuestas del formulario
 
   @Column({ type: 'text', nullable: true })
-  observaciones: string;
+  observaciones?: string;
 
   @CreateDateColumn({ name: 'creado_at' })
   creadoAt: Date;

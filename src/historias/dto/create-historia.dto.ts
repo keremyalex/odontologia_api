@@ -1,131 +1,39 @@
-import { IsInt, IsNotEmpty, IsObject, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { IsInt, IsNotEmpty, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { CuestionarioCompletoDto, CuestionarioDirectDto } from './cuestionario.dto';
 
-class MotivoConsultaDto {
-  @ApiProperty({
-    description: 'Motivo principal de la consulta',
-    example: 'Dolor en muela del juicio inferior derecha'
-  })
-  @IsString()
-  @IsNotEmpty()
-  motivo_consulta: string;
-}
-
-class AntecedentesDto {
+// DTO simplificado para compatibilidad con versiones anteriores
+class CuestionarioSimplificadoDto {
   @ApiPropertyOptional({
-    description: 'Antecedentes médicos del paciente',
-    example: 'Hipertensión arterial, diabetes tipo 2'
+    description: 'Motivo principal de la consulta (versión legacy)',
+    example: 'Dolor intenso en muela del juicio'
   })
   @IsOptional()
   @IsString()
-  enfermedades?: string;
+  motivo_consulta?: string;
 
   @ApiPropertyOptional({
-    description: 'Medicamentos que toma actualmente',
-    example: 'Losartán 50mg, Metformina 850mg'
-  })
-  @IsOptional()
-  @IsString()
-  medicamentos?: string;
-
-  @ApiPropertyOptional({
-    description: 'Alergias conocidas del paciente',
-    example: 'Penicilina, ácaros'
-  })
-  @IsOptional()
-  @IsString()
-  alergias?: string;
-
-  @ApiPropertyOptional({
-    description: 'Antecedentes quirúrgicos',
-    example: 'Apendicectomía (2015), colecistectomía (2020)'
-  })
-  @IsOptional()
-  @IsString()
-  cirugias?: string;
-}
-
-class ExamenClinicoDto {
-  @ApiPropertyOptional({
-    description: 'Estado general del paciente',
-    example: 'Paciente consciente, orientado, colaborador'
-  })
-  @IsOptional()
-  @IsString()
-  estado_general?: string;
-
-  @ApiPropertyOptional({
-    description: 'Presión arterial del paciente',
-    example: '120/80 mmHg'
-  })
-  @IsOptional()
-  @IsString()
-  presion_arterial?: string;
-
-  @ApiPropertyOptional({
-    description: 'Pulso del paciente',
-    example: '72 latidos por minuto'
-  })
-  @IsOptional()
-  @IsString()
-  pulso?: string;
-
-  @ApiPropertyOptional({
-    description: 'Temperatura corporal',
-    example: '36.5°C'
-  })
-  @IsOptional()
-  @IsString()
-  temperatura?: string;
-}
-
-export class CuestionarioDto {
-  @ApiProperty({
-    description: 'Motivo principal de la consulta (obligatorio)',
-    type: MotivoConsultaDto,
+    description: 'Antecedentes médicos (versión legacy)',
     example: {
-      motivo_consulta: 'Dolor intenso en muela del juicio'
+      enfermedades: 'Hipertensión arterial',
+      medicamentos: 'Losartán 50mg',
+      alergias: 'Penicilina',
+      cirugias: 'Apendicectomía (2015)'
     }
   })
-  @ValidateNested()
-  @Type(() => MotivoConsultaDto)
-  @IsNotEmpty()
-  motivo_consulta: string; // Requerido según las reglas
+  @IsOptional()
+  antecedentes?: any;
 
   @ApiPropertyOptional({
-    description: 'Antecedentes médicos del paciente',
-    type: AntecedentesDto
+    description: 'Examen clínico (versión legacy)',
+    example: {
+      estado_general: 'Paciente consciente',
+      presion_arterial: '120/80 mmHg'
+    }
   })
   @IsOptional()
-  @ValidateNested()
-  @Type(() => AntecedentesDto)
-  antecedentes?: AntecedentesDto;
-
-  @ApiPropertyOptional({
-    description: 'Resultados del examen clínico',
-    type: ExamenClinicoDto
-  })
-  @IsOptional()
-  @ValidateNested()
-  @Type(() => ExamenClinicoDto)
-  examen_clinico?: ExamenClinicoDto;
-
-  @ApiPropertyOptional({
-    description: 'Datos del odontograma si se incluyen',
-    example: { diente_18: { estado: 'cariado', tratamiento: 'obturación' } }
-  })
-  @IsOptional()
-  @IsObject()
-  odontograma?: any; // Datos del odontograma si se incluyen
-
-  @ApiPropertyOptional({
-    description: 'Campos adicionales del formulario',
-    example: { notas_especiales: 'Paciente ansioso' }
-  })
-  @IsOptional()
-  @IsObject()
-  otros?: any; // Campos adicionales del formulario
+  examen_clinico?: any;
 }
 
 export class CreateHistoriaDto {
@@ -138,19 +46,53 @@ export class CreateHistoriaDto {
   pacienteId: number;
 
   @ApiProperty({
-    description: 'Cuestionario completo de la historia clínica',
-    type: CuestionarioDto
+    description: 'Cuestionario médico con valores directos (FORMATO SIMPLIFICADO)',
+    type: CuestionarioDirectDto,
+    example: {
+      antecedentesFamiliares: {
+        padreConVida: true,
+        enfermedadPadre: 'Hipertensión arterial',
+        madreConVida: true,
+        enfermedadMadre: null,
+        hermanos: { respuesta: true, detalle: 'Dos hermanos sanos' }
+      },
+      habitosYAntecedentesMedicos: {
+        realizaDeporte: true,
+        malestarDeporte: false,
+        alergiaDroga: false,
+        alergiaAnestesia: false,
+        esDiabetico: null,
+        medicoClinico: 'Dr. José Pérez'
+      }
+    }
   })
   @ValidateNested()
-  @Type(() => CuestionarioDto)
-  @IsNotEmpty()
-  cuestionario: CuestionarioDto;
-
-  @ApiPropertyOptional({
-    description: 'Observaciones adicionales del profesional',
-    example: 'Paciente requiere seguimiento post-tratamiento'
-  })
+  @Type(() => CuestionarioDirectDto)
   @IsOptional()
-  @IsString()
-  observaciones?: string;
+  cuestionario?: CuestionarioDirectDto;
+
+  @ApiProperty({
+    description: 'Cuestionario médico completo estructurado (FORMATO COMPLETO)',
+    type: CuestionarioCompletoDto,
+    example: {
+      antecedentesFamiliares: {
+        padreConVida: { respuesta: true },
+        enfermedadPadre: { respuesta: 'Hipertensión arterial' },
+        madreConVida: { respuesta: true },
+        enfermedadMadre: { respuesta: 'Diabetes tipo 2' },
+        hermanos: { respuesta: true, detalle: 'Dos hermanos sanos' }
+      },
+      habitosYAntecedentesMedicos: {
+        realizaDeporte: { respuesta: true },
+        alergiaPenicilina: { respuesta: true },
+        esDiabetico: { respuesta: false },
+        presionAlta: { respuesta: false },
+        fuma: { respuesta: false }
+      }
+    }
+  })
+  @ValidateNested()
+  @Type(() => CuestionarioCompletoDto)
+  @IsOptional()
+  cuestionarioCompleto?: CuestionarioCompletoDto;
 }
