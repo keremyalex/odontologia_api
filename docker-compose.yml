@@ -1,0 +1,44 @@
+services:
+  db:
+    image: postgres:16
+    container_name: odontologia_db
+    environment:
+      POSTGRES_DB: odontologia_db
+      POSTGRES_USER: odontologia_user
+      POSTGRES_PASSWORD: odontologia_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - odontologia_network
+
+  backend:
+    build: .
+    container_name: odontologia_backend
+    environment:
+      - DATABASE_HOST=db
+      - DATABASE_PORT=5432
+      - DATABASE_USERNAME=odontologia_user
+      - DATABASE_PASSWORD=odontologia_pass
+      - DATABASE_NAME=odontologia_db
+      - JWT_SECRET=mi_super_secreto_jwt_key_muy_seguro_2025
+      - JWT_EXPIRATION_TIME=24h
+      - PORT=3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    networks:
+      - odontologia_network
+
+volumes:
+  postgres_data:
+
+networks:
+  odontologia_network:
+    driver: bridge
