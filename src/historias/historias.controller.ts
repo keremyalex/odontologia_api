@@ -139,6 +139,44 @@ export class HistoriasController {
   }
 
   @ApiOperation({
+    summary: 'Obtener template del cuestionario odontológico',
+    description: 'Obtener la estructura del cuestionario odontológico para crear historias clínicas'
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Template del cuestionario odontológico obtenido exitosamente',
+    schema: {
+      type: 'object',
+      properties: {
+        historia_clinica_odontologica: {
+          type: 'object',
+          description: 'Estructura completa del cuestionario odontológico'
+        }
+      },
+      example: {
+        historia_clinica_odontologica: {
+          consulta_inicial: [
+            { pregunta: "¿Por qué asistió a la consulta?", tipo: "texto" },
+            { pregunta: "¿Consultó antes con algún otro profesional?", tipo: "si_no" }
+          ],
+          dolor: {
+            grupo: "Información sobre dolor",
+            campos: [
+              { pregunta: "¿Ha tenido dolor?", tipo: "si_no" },
+              { pregunta: "¿De qué tipo de dolor?", tipo: "seleccion_multiple", opciones: ["Suave", "Moderado", "Intenso"] }
+            ]
+          }
+        }
+      }
+    }
+  })
+  @Get('template/cuestionario-odontologico')
+  @Roles(UserRole.ADMIN, UserRole.DOCENTE, UserRole.RECEPCION)
+  async getCuestionarioOdontologicoTemplate() {
+    return this.historiasService.getCuestionarioOdontologicoTemplate();
+  }
+
+  @ApiOperation({
     summary: 'Actualizar historia clínica',
     description: 'Modificar los datos de una historia clínica existente'
   })

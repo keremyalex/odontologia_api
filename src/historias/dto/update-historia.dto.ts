@@ -3,12 +3,22 @@ import { CreateHistoriaDto } from './create-historia.dto';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
-import { CuestionarioCompletoDto } from './cuestionario.dto';
+import { CuestionarioCompletoDto, CuestionarioDirectDto } from './cuestionario.dto';
+import { CuestionarioOdontologicoDto } from './cuestionario-odontologico.dto';
 
 // Creamos un DTO específico para update sin circularidad
 export class UpdateHistoriaDto {
   @ApiPropertyOptional({
-    description: 'Cuestionario médico completo estructurado (RECOMENDADO)',
+    description: 'Cuestionario médico con valores directos (FORMATO SIMPLIFICADO)',
+    type: () => CuestionarioDirectDto
+  })
+  @ValidateNested()
+  @Type(() => CuestionarioDirectDto)
+  @IsOptional()
+  cuestionario?: CuestionarioDirectDto;
+
+  @ApiPropertyOptional({
+    description: 'Cuestionario médico completo estructurado (FORMATO COMPLETO)',
     type: () => CuestionarioCompletoDto
   })
   @ValidateNested()
@@ -17,17 +27,13 @@ export class UpdateHistoriaDto {
   cuestionarioCompleto?: CuestionarioCompletoDto;
 
   @ApiPropertyOptional({
-    description: 'Cuestionario simplificado (LEGACY)',
-    example: {
-      motivo_consulta: 'Control preventivo',
-      antecedentes: {
-        enfermedades: 'Ninguna',
-        medicamentos: 'Ninguno'
-      }
-    }
+    description: 'Cuestionario odontológico específico',
+    type: () => CuestionarioOdontologicoDto
   })
+  @ValidateNested()
+  @Type(() => CuestionarioOdontologicoDto)
   @IsOptional()
-  cuestionario?: any;
+  cuestionarioOdontologico?: CuestionarioOdontologicoDto;
 
   @ApiPropertyOptional({
     description: 'Observaciones adicionales del profesional',

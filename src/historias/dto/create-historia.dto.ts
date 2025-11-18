@@ -2,6 +2,7 @@ import { IsInt, IsNotEmpty, IsOptional, IsString, ValidateNested } from 'class-v
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { CuestionarioCompletoDto, CuestionarioDirectDto } from './cuestionario.dto';
+import { CuestionarioOdontologicoDto } from './cuestionario-odontologico.dto';
 
 // DTO simplificado para compatibilidad con versiones anteriores
 class CuestionarioSimplificadoDto {
@@ -95,4 +96,27 @@ export class CreateHistoriaDto {
   @Type(() => CuestionarioCompletoDto)
   @IsOptional()
   cuestionarioCompleto?: CuestionarioCompletoDto;
+
+  @ApiProperty({
+    description: 'Cuestionario odontológico específico',
+    type: CuestionarioOdontologicoDto,
+    example: {
+      por_que_asistio_a_la_consulta: "Dolor en muela",
+      consulto_antes_con_algun_otro_profesional: true,
+      dolor: {
+        ha_tenido_dolor: true,
+        dolor_tipo_intensidad: ["Intenso"],
+        dolor_frecuencia: ["Continuo"],
+        dolor_provocado: ["Al frío"],
+        dolor_irradiado: false
+      },
+      le_sangran_las_encias: false,
+      tiene_movilidad_en_sus_dientes: false,
+      estado_de_la_higiene_bucal: "Bueno"
+    }
+  })
+  @ValidateNested()
+  @Type(() => CuestionarioOdontologicoDto)
+  @IsOptional()
+  cuestionarioOdontologico?: CuestionarioOdontologicoDto;
 }

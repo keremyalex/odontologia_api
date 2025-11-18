@@ -19,7 +19,10 @@ export class Historia {
   creadoPor: number;
 
   @Column({ type: 'jsonb' })
-  cuestionario: any; // JSON con las respuestas del formulario
+  cuestionario: any; // JSON con las respuestas del cuestionario médico general
+
+  @Column({ type: 'jsonb', nullable: true, name: 'cuestionario_odontologico' })
+  cuestionarioOdontologico?: any; // JSON con las respuestas del cuestionario odontológico
 
   @Column({ type: 'text', nullable: true })
   observaciones?: string;
