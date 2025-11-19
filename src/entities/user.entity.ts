@@ -44,4 +44,7 @@ export class User {
 
   @OneToMany('Adjunto', 'creador')
   adjuntosCreados: any[];
+
+  @OneToMany('FranjaHoraria', 'responsable')
+  franjasHorarias: any[];
 }
