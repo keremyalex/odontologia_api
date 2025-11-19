@@ -1,23 +1,23 @@
-# Usar una imagen base de Node.js
-FROM node:22-alpine
-
-# Establecer el directorio de trabajo
+# Stage 1: build
+FROM node:22-alpine AS builder
 WORKDIR /usr/src/app
 
-# Copiar package.json y package-lock.json
 COPY package*.json ./
-
-# Instalar dependencias
 RUN npm install
 
-# Copiar el código de la aplicación
 COPY . .
-
-# Compilar la aplicación
 RUN npm run build
 
-# Exponer el puerto
-EXPOSE 3000
+# Stage 2: runtime
+FROM node:22-alpine AS runner
+WORKDIR /usr/src/app
 
-# Comando para iniciar la aplicación
-CMD ["npm", "run", "start:prod"]
+COPY package*.json ./
+RUN npm install --only=production
+
+COPY --from=builder /usr/src/app/dist ./dist
+
+# Si quieres usar variables de entorno PORT, etc.
+ENV NODE_ENV=production
+
+CMD ["node", "dist/main.js"]
