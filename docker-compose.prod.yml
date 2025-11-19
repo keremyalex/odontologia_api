@@ -17,10 +17,8 @@ services:
       # Puerto de la aplicación
       - PORT=${PORT:-3000}
       
-      # Variables adicionales de Node.js
-      - NODE_ENV=${NODE_ENV:-production}
+      # Variables de Node.js
+      - NODE_ENV=production
     ports:
       - "${PORT:-3000}:${PORT:-3000}"
-    volumes:
-      - .:/usr/src/app
-      - /usr/src/app/node_modules
+    restart: unless-stopped
