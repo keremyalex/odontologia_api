@@ -46,4 +46,7 @@ export class Paciente {
   // Nuevas relaciones Sprint 2
   @OneToMany('Historia', 'paciente')
   historias: any[];
+
+  @OneToMany('Cita', 'paciente')
+  citas: any[];
 }

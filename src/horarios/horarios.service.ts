@@ -80,14 +80,16 @@ export class HorariosService {
     return await this.franjaHorariaRepository.save(franja);
   }
 
-  async findAllFranjasHorarias(): Promise<FranjaHoraria[]> {
-    return await this.franjaHorariaRepository.find({
+  async findAllFranjasHorarias(): Promise<any[]> {
+    const franjas = await this.franjaHorariaRepository.find({
       relations: ['especialidad', 'responsable'],
       order: { diaSemana: 'ASC', horaInicio: 'ASC' }
     });
+    
+    return this.addCuposCalculados(franjas);
   }
 
-  async findOneFranjaHoraria(id: number): Promise<FranjaHoraria> {
+  async findOneFranjaHoraria(id: number): Promise<any> {
     const franja = await this.franjaHorariaRepository.findOne({
       where: { id },
       relations: ['especialidad', 'responsable']
@@ -97,7 +99,7 @@ export class HorariosService {
       throw new NotFoundException(`Franja horaria con ID ${id} no encontrada`);
     }
     
-    return franja;
+    return this.addCuposCalculados([franja])[0];
   }
 
   async updateFranjaHoraria(id: number, updateFranjaHorariaDto: UpdateFranjaHorariaDto): Promise<FranjaHoraria> {
@@ -128,20 +130,24 @@ export class HorariosService {
     await this.franjaHorariaRepository.remove(franja);
   }
 
-  async findFranjasByDiaYEspecialidad(diaSemana: number, especialidadId: number): Promise<FranjaHoraria[]> {
-    return await this.franjaHorariaRepository.find({
+  async findFranjasByDiaYEspecialidad(diaSemana: number, especialidadId: number): Promise<any[]> {
+    const franjas = await this.franjaHorariaRepository.find({
       where: { diaSemana, especialidadId, estado: 'activo' },
       relations: ['especialidad', 'responsable'],
       order: { horaInicio: 'ASC' }
     });
+    
+    return this.addCuposCalculados(franjas);
   }
 
-  async findFranjasByResponsable(responsableId: number): Promise<FranjaHoraria[]> {
-    return await this.franjaHorariaRepository.find({
+  async findFranjasByResponsable(responsableId: number): Promise<any[]> {
+    const franjas = await this.franjaHorariaRepository.find({
       where: { responsableId },
       relations: ['especialidad', 'responsable'],
       order: { diaSemana: 'ASC', horaInicio: 'ASC' }
     });
+    
+    return this.addCuposCalculados(franjas);
   }
 
   // ===== MÉTODOS DE VALIDACIÓN =====
@@ -215,5 +221,33 @@ export class HorariosService {
         `Ya existe una franja horaria para el responsable en ese horario: ${overlapping.horaInicio}-${overlapping.horaFin}`
       );
     }
+  }
+
+  // Método privado para agregar cuposCalculados a las franjas
+  private addCuposCalculados(franjas: FranjaHoraria[]): any[] {
+    return franjas.map(franja => {
+      // Calcular cupos
+      let cuposCalculados: number;
+      
+      if (franja.cuposMaximos !== null && franja.cuposMaximos !== undefined) {
+        cuposCalculados = franja.cuposMaximos;
+      } else {
+        // Calcular automáticamente basado en horarios
+        const [horaIni, minIni] = franja.horaInicio.split(':').map(Number);
+        const [horaFin, minFin] = franja.horaFin.split(':').map(Number);
+        
+        const minutosInicio = horaIni * 60 + minIni;
+        const minutosFin = horaFin * 60 + minFin;
+        const totalMinutos = minutosFin - minutosInicio;
+        
+        cuposCalculados = Math.floor(totalMinutos / franja.duracionCitaMin);
+      }
+      
+      // Crear un objeto que incluya todos los campos de la franja más cuposCalculados
+      return {
+        ...franja,
+        cuposCalculados
+      };
+    });
   }
 }

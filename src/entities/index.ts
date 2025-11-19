@@ -8,3 +8,4 @@ export { Auditoria, AccionAuditoria } from './auditoria.entity';
 export { Especialidad } from './especialidad.entity';
 export { HorarioClinica } from './horario-clinica.entity';
 export { FranjaHoraria } from './franja-horaria.entity';
+export { Cita, CitaEstado } from './cita.entity';
