@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, Index, Check } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToOne, JoinColumn, Index, Check } from 'typeorm';
 import { Paciente } from './paciente.entity';
 import { FranjaHoraria } from './franja-horaria.entity';
 
@@ -62,4 +62,7 @@ export class Cita {
     @ManyToOne('User', 'citasCreadas', { nullable: true })
     @JoinColumn({ name: 'creado_por' })
     creador: any;
+
+    @OneToOne('Atencion', 'cita', { nullable: true })
+    atencion: any;
 }

@@ -3,7 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { User, Paciente, Turno, Historia, Odontograma, Adjunto, Auditoria, Especialidad, HorarioClinica, FranjaHoraria, Cita } from './entities';
+import { User, Paciente, Turno, Historia, Odontograma, Adjunto, Auditoria, Especialidad, HorarioClinica, FranjaHoraria, Cita, Atencion } from './entities';
 import { AuthModule } from './auth/auth.module';
 import { PacientesModule } from './pacientes/pacientes.module';
 import { TurnosModule } from './turnos/turnos.module';
@@ -14,6 +14,7 @@ import { AuditoriaModule } from './auditoria/auditoria.module';
 import { EspecialidadesModule } from './especialidades/especialidades.module';
 import { HorariosModule } from './horarios/horarios.module';
 import { CitasModule } from './citas/citas.module';
+import { AtencionesModule } from './atenciones/atenciones.module';
 
 @Module({
   imports: [
@@ -41,7 +42,7 @@ import { CitasModule } from './citas/citas.module';
           username: dbUsername,
           password: dbPassword,
           database: dbName,
-          entities: [User, Paciente, Turno, Historia, Odontograma, Adjunto, Auditoria, Especialidad, HorarioClinica, FranjaHoraria, Cita],
+          entities: [User, Paciente, Turno, Historia, Odontograma, Adjunto, Auditoria, Especialidad, HorarioClinica, FranjaHoraria, Cita, Atencion],
           synchronize: true, // Solo para desarrollo, en producción usar migraciones
           logging: false,
         };
@@ -58,6 +59,7 @@ import { CitasModule } from './citas/citas.module';
     EspecialidadesModule,
     HorariosModule,
     CitasModule,
+    AtencionesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

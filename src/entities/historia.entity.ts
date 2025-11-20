@@ -44,4 +44,7 @@ export class Historia {
 
   @OneToMany(() => Adjunto, adjunto => adjunto.historia)
   adjuntos: Adjunto[];
+
+  @OneToMany('Atencion', 'historia')
+  atenciones: any[];
 }

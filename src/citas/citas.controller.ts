@@ -99,7 +99,17 @@ export class CitasController {
     @Query('fechaInicio') fechaInicio: string,
     @Query('fechaFin') fechaFin: string
   ): Promise<Cita[]> {
-    return this.citasService.findByRangoFechas(fechaInicio, fechaFin);
+    return this.citasService.findByRango(fechaInicio, fechaFin);
+  }
+
+  @Get('pendientes-atencion')
+  @ApiOperation({ 
+    summary: 'Obtener citas pendientes de atención',
+    description: 'Recupera todas las citas en estado PROGRAMADA que están listas para ser atendidas'
+  })
+  @ApiResponse({ status: 200, description: 'Citas pendientes obtenidas exitosamente', type: [Cita] })
+  findPendientesAtencion(): Promise<Cita[]> {
+    return this.citasService.findPendientesAtencion();
   }
 
   @Get(':id')

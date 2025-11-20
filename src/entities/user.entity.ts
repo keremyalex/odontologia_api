@@ -50,4 +50,7 @@ export class User {
 
   @OneToMany('Cita', 'creador')
   citasCreadas: any[];
+
+  @OneToMany('Atencion', 'atencionPor')
+  atencionesRealizadas: any[];
 }

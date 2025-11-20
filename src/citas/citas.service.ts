@@ -369,6 +369,32 @@ export class CitasService {
     return slots;
   }
 
+  async findPendientesAtencion(): Promise<Cita[]> {
+    return this.citaRepository.find({
+      where: { 
+        estado: CitaEstado.PROGRAMADA 
+      },
+      relations: ['paciente', 'franja', 'franja.especialidad', 'franja.responsable'],
+      order: { 
+        fecha: 'ASC',
+        horaInicio: 'ASC'
+      },
+    });
+  }
+
+  async findByRango(fechaInicio: string, fechaFin: string): Promise<Cita[]> {
+    return this.citaRepository.find({
+      where: {
+        fecha: Between(new Date(fechaInicio), new Date(fechaFin))
+      },
+      relations: ['paciente', 'franja', 'franja.especialidad', 'franja.responsable'],
+      order: { 
+        fecha: 'ASC',
+        horaInicio: 'ASC'
+      },
+    });
+  }
+
   private normalizeTimeFormat(time: string): string {
     // Convertir "10:45" a "10:45:00" para comparación consistente
     if (time.length === 5 && time.includes(':')) {
