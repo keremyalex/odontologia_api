@@ -13,7 +13,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam } from '@nestjs/swagger';
 import { OdontogramasService } from './odontogramas.service';
-import { CreateOdontogramaDto } from './dto/create-odontograma.dto';
+import { CreateOdontogramaDto, UpdateOdontogramaObservacionesDto } from './dto/create-odontograma.dto';
 import { UpdateOdontogramaDto } from './dto/update-odontograma.dto';
 import { JwtAuthGuard, RolesGuard } from '../auth/guards/auth.guards';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -77,8 +77,15 @@ export class OdontogramasController {
   })
   @Get('historia/:historiaId')
   @Roles(UserRole.ADMIN, UserRole.DOCENTE, UserRole.RECEPCION)
-  findByHistoria(@Param('historiaId', ParseIntPipe) historiaId: number) {
-    return this.odontogramasService.findByHistoria(historiaId);
+  async findByHistoria(@Param('historiaId', ParseIntPipe) historiaId: number) {
+    const odontogramas = await this.odontogramasService.findByHistoria(historiaId);
+    return {
+      success: true,
+      data: odontogramas.map(o => ({
+        ...o,
+        dientes: o.getDientes()
+      }))
+    };
   }
 
   @ApiOperation({
@@ -100,8 +107,15 @@ export class OdontogramasController {
   })
   @Get('historia/:historiaId/latest')
   @Roles(UserRole.ADMIN, UserRole.DOCENTE, UserRole.RECEPCION)
-  findLatestByHistoria(@Param('historiaId', ParseIntPipe) historiaId: number) {
-    return this.odontogramasService.findLatestByHistoria(historiaId);
+  async findLatestByHistoria(@Param('historiaId', ParseIntPipe) historiaId: number) {
+    const odontograma = await this.odontogramasService.findLatestByHistoria(historiaId);
+    return {
+      success: true,
+      data: {
+        ...odontograma,
+        dientes: odontograma.getDientes() // Deserializar JSON para el frontend
+      }
+    };
   }
 
   @ApiOperation({
@@ -123,8 +137,15 @@ export class OdontogramasController {
   })
   @Get(':id')
   @Roles(UserRole.ADMIN, UserRole.DOCENTE, UserRole.RECEPCION)
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.odontogramasService.findOne(id);
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    const odontograma = await this.odontogramasService.findOne(id);
+    return {
+      success: true,
+      data: {
+        ...odontograma,
+        dientes: odontograma.getDientes()
+      }
+    };
   }
 
   @ApiOperation({
@@ -139,6 +160,95 @@ export class OdontogramasController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Observaciones actualizadas exitosamente'
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Odontograma no encontrado'
+  })
+  @Patch(':id/observaciones')
+  @Roles(UserRole.ADMIN, UserRole.DOCENTE)
+  updateObservaciones(@Param('id', ParseIntPipe) id: number, @Body() updateDto: UpdateOdontogramaObservacionesDto, @Req() req) {
+    return this.odontogramasService.updateObservaciones(id, updateDto, req.user.id);
+  }
+
+  @ApiOperation({
+    summary: 'Guardar/Actualizar odontograma completo',
+    description: 'Guardar el estado completo del odontograma desde el frontend. Si no existe, crea uno nuevo; si existe, crea una nueva versión.'
+  })
+  @ApiParam({
+    name: 'historiaId',
+    description: 'ID de la historia clínica',
+    example: 1
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Odontograma guardado exitosamente'
+  })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'Nuevo odontograma creado exitosamente'
+  })
+  @Post('historia/:historiaId/guardar')
+  @Roles(UserRole.ADMIN, UserRole.DOCENTE)
+  async guardarOdontograma(
+    @Param('historiaId', ParseIntPipe) historiaId: number,
+    @Body() odontogramaData: { dientes: any[], observaciones?: string },
+    @Req() req
+  ) {
+    // Preparar DTO para crear odontograma
+    const createDto: CreateOdontogramaDto = {
+      historiaId,
+      fecha: new Date().toISOString().split('T')[0],
+      dientes: odontogramaData.dientes,
+      observaciones: odontogramaData.observaciones || ''
+    };
+
+    const odontograma = await this.odontogramasService.create(createDto, req.user.id);
+    
+    return {
+      success: true,
+      data: {
+        ...odontograma,
+        dientes: odontograma.getDientes()
+      }
+    };
+  }
+
+  @ApiOperation({
+    summary: 'Obtener estadísticas del odontograma',
+    description: 'Obtener estadísticas detalladas del estado dental de una historia clínica'
+  })
+  @ApiParam({
+    name: 'historiaId',
+    description: 'ID de la historia clínica',
+    example: 1
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Estadísticas obtenidas exitosamente'
+  })
+  @Get('historia/:historiaId/estadisticas')
+  @Roles(UserRole.ADMIN, UserRole.DOCENTE, UserRole.RECEPCION)
+  async obtenerEstadisticas(@Param('historiaId', ParseIntPipe) historiaId: number) {
+    const estadisticas = await this.odontogramasService.obtenerEstadisticas(historiaId);
+    return {
+      success: true,
+      data: estadisticas
+    };
+  }
+
+  @ApiOperation({
+    summary: 'Actualizar odontograma completo (crear nueva versión)',
+    description: 'Crear una nueva versión del odontograma con cambios completos'
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'ID del odontograma base',
+    example: 1
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Nueva versión del odontograma creada exitosamente'
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
